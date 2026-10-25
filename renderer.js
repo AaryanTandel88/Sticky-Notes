@@ -6,6 +6,20 @@ const emptyMessage = document.getElementById('empty-message')
 
 let notes = []
 let nextId = 1
+let saveQueue = Promise.resolve()
+
+function saveNotes() {
+    const snapshot = JSON.stringify(notes)
+
+    saveQueue = saveQueue
+        .catch(() => {})
+        .then(() => window.notesAPI.saveNotes(JSON.parse(snapshot)))
+        .catch(error => {
+            console.error('Could not save notes:', error)
+        })
+
+    return saveQueue
+}
 
 function renderNotes() {
     container.innerHTML = ''
@@ -43,17 +57,21 @@ function renderNotes() {
         const saveButton = document.createElement('button')
         saveButton.textContent = 'Save'
 
-        saveButton.addEventListener('click', () => {
+        saveButton.addEventListener('click', async () => {
             note.title = title.value
             note.content = content.value
+
+            await saveNotes()
             renderNotes()
         })
 
         const deleteButton = document.createElement('button')
         deleteButton.textContent = 'Delete'
 
-        deleteButton.addEventListener('click', () => {
+        deleteButton.addEventListener('click', async () => {
             notes = notes.filter(item => item.id !== note.id)
+
+            await saveNotes()
             renderNotes()
         })
 
@@ -63,13 +81,14 @@ function renderNotes() {
     })
 }
 
-addButton.addEventListener('click', () => {
+addButton.addEventListener('click', async () => {
     notes.unshift({
-        id: nextId++,
+        id: Date.now(),
         title: '',
         content: ''
     })
 
+    await saveNotes()
     renderNotes()
 
     const firstTitle = container.querySelector('.note input')
@@ -78,4 +97,15 @@ addButton.addEventListener('click', () => {
 
 searchInput.addEventListener('input', renderNotes)
 
-renderNotes()
+async function startApp() {
+    try {
+        notes = await window.notesAPI.loadNotes()
+        nextId = Date.now()
+        renderNotes()
+    } catch (error) {
+        console.error('Could not load notes:', error)
+        emptyMessage.textContent = 'Could not load notes. Check the console.'
+    }
+}
+
+startApp()

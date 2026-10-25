@@ -1,6 +1,7 @@
 
-const { contextBridge } = require('electron')
+const { contextBridge, ipcRenderer } = require('electron')
 
 contextBridge.exposeInMainWorld('notesAPI', {
-    appName: 'Sticky Notes'
+    loadNotes: () => ipcRenderer.invoke('notes:load'),
+    saveNotes: (notes) => ipcRenderer.invoke('notes:save', notes)
 })
