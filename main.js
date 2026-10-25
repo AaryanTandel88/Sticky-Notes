@@ -43,6 +43,46 @@ ipcMain.handle('notes:save', async (event, notes) => {
     return saveNotes(notes)
 })
 
+
+ipcMain.handle('notes:float', (event, note) => {
+    if (!note || typeof note.id !== 'number') {
+        throw new Error('Invalid note')
+    }
+
+    createFloatingNote({
+        id: note.id,
+        title: String(note.title || ''),
+        content: String(note.content || '')
+    })
+
+    return true
+})
+
+
+
+function createFloatingNote(note) {
+    const win = new BrowserWindow({
+        width: 320,
+        height: 300,
+        minWidth: 240,
+        minHeight: 200,
+        title: note.title || 'Sticky Note',
+        alwaysOnTop: true,
+        backgroundColor: '#fff2a8',
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js'),
+            contextIsolation: true,
+            nodeIntegration: false
+        }
+    })
+
+    win.loadFile('note.html')
+
+    win.webContents.once('did-finish-load', () => {
+        win.webContents.send('floating-note:load', note)
+    })
+}
+
 function createWindow() {
     const win = new BrowserWindow({
         width: 1000,

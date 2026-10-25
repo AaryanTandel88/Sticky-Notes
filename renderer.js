@@ -68,6 +68,19 @@ function renderNotes() {
         const deleteButton = document.createElement('button')
         deleteButton.textContent = 'Delete'
 
+
+        const floatButton = document.createElement('button')
+        floatButton.textContent = 'Float'
+
+        floatButton.addEventListener('click', async () => {
+            note.title = title.value
+            note.content = content.value
+
+            await saveNotes()
+            await window.notesAPI.floatNote(note)
+        })
+
+
         deleteButton.addEventListener('click', async () => {
             notes = notes.filter(item => item.id !== note.id)
 
@@ -75,7 +88,7 @@ function renderNotes() {
             renderNotes()
         })
 
-        actions.append(saveButton, deleteButton)
+        actions.append(saveButton, floatButton, deleteButton)
         card.append(title, content, actions)
         container.appendChild(card)
     })
@@ -107,5 +120,31 @@ async function startApp() {
         emptyMessage.textContent = 'Could not load notes. Check the console.'
     }
 }
+
+
+document.addEventListener('keydown', async event => {
+    const modifier = event.metaKey || event.ctrlKey
+
+    if (!modifier) return
+
+    if (event.key.toLowerCase() === 'n') {
+        event.preventDefault()
+        addButton.click()
+    }
+
+    if (event.key.toLowerCase() === 's') {
+        event.preventDefault()
+
+        const cards = container.querySelectorAll('.note')
+
+        cards.forEach(card => {
+            const saveButton = card.querySelector('.note-actions button')
+            if (saveButton) saveButton.click()
+        })
+
+        await saveNotes()
+    }
+})
+
 
 startApp()
