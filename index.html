@@ -8,10 +8,19 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="app">
-        <h1>Sticky Notes</h1>
-        <p>Your ideas, all in one place.</p>
-    </div>
+    <header class="topbar">
+        <div>
+            <h1>Sticky Notes</h1>
+            <p>Capture your thoughts.</p>
+        </div>
+        <button id="add-note">+ New Note</button>
+    </header>
+
+    <main>
+        <input id="search" type="text" placeholder="Search your notes...">
+        <div id="notes-container" class="notes-grid"></div>
+        <p id="empty-message">No notes yet. Create your first note!</p>
+    </main>
 
     <script src="renderer.js"></script>
 </body>
